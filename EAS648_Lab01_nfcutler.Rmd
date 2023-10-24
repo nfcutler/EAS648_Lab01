@@ -1,0 +1,106 @@
+git config --global user.email "nfcutler@umich.edu"
+git config --global user.name "Naomi Cutler"
+**EAS648 Lab01**
+**By Naomi Cutler**
+
+
+## Part 1
+####Load required libraries and read in Boulder Social Media data. 
+This dataset comes from Dr. Derek Van Berkel's work with the Open Spaces and Mountain Parks of Boulder Colorado. The data includes points where photos were taken and uploaded to Flickr and Panramio. I uploaded the shapefile as an sf file.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(sf)
+library(ggspatial)
+library(viridis)
+library(tmap)
+
+boulder <- st_read('~/EAS548/EAS648/Lab01/Boulder_Data/BoulderSocialMedia.shp')
+```
+
+## Part 2
+#### Visualizing Data
+The following plots visualize the Boulder, CO data in various ways. See the figure captions for details on each visualization.
+```{r, fig.cap= Figure 1: This plot visualizes the boulder data using the black and white theme and a transparent fill.}
+ggplot() +
+    geom_sf(data =boulder,
+    fill = NA, alpha = .2) +
+    theme_bw()
+```
+
+```{r, fig.cap='Figure 2: Using the same visual elements as figure 1, this map uses the NAD27 Colorado North projection which is more appropriate for Boulder, CO.'}
+#changing projections
+boulder = st_transform(boulder, 26753) 
+ggplot() +
+    geom_sf(data =boulder,
+    fill = NA, alpha = .2) +
+    theme_bw()
+```
+
+```{r, fig.cap='Figure 3: This map plots the photo locations by elevation.'}
+ggplot() +
+    geom_sf(data =boulder, aes(color=PT_Elev),
+    fill = NA, alpha = .2) +
+    theme_bw()
+```
+
+
+```{r, fig.cap='Figure 4: This map shows elevation with a different color scheme than figure 3. '}
+ggplot() +
+    geom_sf(data =boulder, aes(color=PT_Elev),
+    fill = NA, alpha = .2) +
+  scale_colour_gradientn(colours = terrain.colors(10)) +  
+  theme_bw()
+```
+
+
+```{r, fig.cap='Figure 5: This map uses the dplyr library to mutate the columns in the Boulder file. It assigns elevation that is greater than or equal to 2200 meters to be "TRUE" and elevation less than 2200 meters to be "FALSE." The map then symbolizes these values so we can see that blue is high elevation and orange is low elevation.'}
+#library(dplyr)
+boulder %>%
+    mutate(high_elev = ifelse(PT_Elev >= 2200, TRUE, FALSE))%>% 
+ggplot() +
+  geom_sf(aes(color=high_elev),
+    fill = NA, alpha = .2)  +  
+  theme_bw()
+```
+
+```{r, fig.cap='This plot shows the distance to lakes, rivers, and creeks (hydro) for the Flickr and Panramio photo points. Panramio has a slighly larger spread and a higher mean (1947.38 m) than the Flickr distances (1734.822 m)'}
+boulder %>%
+  filter(DB ==  'Pano' | DB == 'Flickr') %>%
+  ggplot(aes(x=DB, y=Hydro_dis)) + 
+  geom_boxplot()
+
+
+pano = boulder %>%
+  filter(DB ==  'Pano')
+
+flickr = boulder %>%
+  filter(DB ==  'Flickr')
+
+mean(pano$Hydro_dis)
+mean(flickr$Hydro_dis)
+```
+
+```{r, Fig.cap='This map shows the Boulder data elevation using the Magma color scale which is more suitable for folks with visual impairments which may not allow them to distinguish between colors.'}
+ggplot() +
+    geom_sf(data = boulder, aes(color=PT_Elev),
+    fill = NA, alpha = .2) + 
+    scale_colour_gradientn(colours = magma(10))
+```
+
+```{r, fig.cap='This map uses the tmap package to map the variable Climb_dist which is the distance to the nearest climbing wall from each photo point. The map splits the column values into 5 equal parts using "quantile" to display the data in different classes.'}
+## Add the data - these are specific to the vector or raster
+tm_shape(boulder) + 
+  ## which variable, is there a class interval, palette, and other options
+  tm_symbols(col='Climb_dist', 
+             style='quantile', 
+             palette = 'YlOrRd',
+             border.lwd = NA,
+             size = 0.1)
+```
+
+
+
+
+
