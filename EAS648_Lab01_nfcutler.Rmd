@@ -3,7 +3,7 @@
 
 
 ## Part 1
-####Load required libraries and read in Boulder Social Media data. 
+###Load required libraries and read in Boulder Social Media data. 
 This dataset comes from Dr. Derek Van Berkel's work with the Open Spaces and Mountain Parks of Boulder Colorado. The data includes points where photos were taken and uploaded to Flickr and Panramio. I uploaded the shapefile as an sf file.
 
 ```{r}
